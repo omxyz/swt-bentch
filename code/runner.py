@@ -672,6 +672,53 @@ async def run_instance_full_pipeline(
     total_cost = sum(float(c.get("cost_usd", 0)) for c in test_candidates)
     total_cost += sum(float(f.get("cost_usd", 0)) for f in fix_candidates)
 
+    # --- Persist per-instance trajectory for leaderboard verification --------
+    # Write trajectories/<instance_id>.json with all test candidates,
+    # fix candidates, CXV cells, and selection record. Enables third-party
+    # verification that predictions are not cherry-picked or fabricated.
+    try:
+        traj_dir = output_dir / run_id / "trajectories"
+        traj_dir.mkdir(parents=True, exist_ok=True)
+        traj_path = traj_dir / f"{instance_id}.json"
+
+        def _serialize_candidate(c: dict) -> dict:
+            """Strip non-serializable fields but keep trajectory."""
+            out = {
+                k: v for k, v in c.items()
+                if k not in {"_workspace", "_conversation", "_agent"}
+            }
+            return out
+
+        traj_record = {
+            "instance_id": instance_id,
+            "winner_idx": test_candidates.index(winner) if winner in test_candidates else -1,
+            "winner_score": float(max(scores)) if scores else 0.0,
+            "best_fix_idx": best_fix_idx,
+            "elapsed_s": round(elapsed, 1),
+            "test_candidates": [_serialize_candidate(c) for c in test_candidates],
+            "fix_candidates": [_serialize_candidate(f) for f in fix_candidates],
+            "cxv_cells": [
+                {
+                    "test_idx": c.test_candidate_idx,
+                    "fix_idx": c.fix_candidate_idx,
+                    "verdict": c.verdict.value if hasattr(c.verdict, "value") else str(c.verdict),
+                    "killed": c.killed,
+                    "pytest_tail": (c.pytest_output[-1000:] if hasattr(c, "pytest_output") and c.pytest_output else ""),
+                }
+                for c in cells
+            ],
+            "scores": [float(s) for s in scores] if scores else [],
+            "final_patch": patch,
+        }
+        with traj_path.open("w") as f:
+            json.dump(traj_record, f, default=str)
+        logger.info("[%s] trajectory written to %s", instance_id, traj_path)
+    except Exception as traj_exc:
+        logger.warning(
+            "[%s] trajectory persistence failed: %s",
+            instance_id, str(traj_exc)[:200],
+        )
+
     run_record = {
         "instance_id": instance_id,
         "winner_path": winner.get("path_name") if winner else None,
@@ -823,8 +870,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--track", choices=["lite", "verified"], default="lite",
                    help="Dataset track")
     p.add_argument("--instance-set",
-                   choices=["failing100", "ratelimited76", "resolved175", "lite275",
-                            "verified433", "lite30_calib", "verified30_calib"],
+                   choices=["failing100", "ratelimited76", "resolved18", "resolved175",
+                            "lite275", "verified433", "lite30_calib", "verified30_calib"],
                    default=None, help="Named instance subset to run")
     p.add_argument("--smoke", action="store_true",
                    help="Smoke-test mode: run 1 instance only with $20 budget cap")

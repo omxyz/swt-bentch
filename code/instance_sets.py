@@ -148,6 +148,29 @@ def load_ratelimited76() -> list[str]:
     return empty_ids
 
 
+def load_resolved18() -> list[str]:
+    """Return the 18 instances resolved by Jina Test's CXV pipeline.
+
+    These are the 18 instances from failing100 that Jina Test successfully
+    resolved (13 from first run + 5 from re-run). Used for trajectory
+    verification / reproducibility runs.
+    """
+    return [
+        # First run (13)
+        "django__django-12856", "django__django-13447", "django__django-13933",
+        "django__django-15781", "django__django-16408",
+        "matplotlib__matplotlib-23964", "matplotlib__matplotlib-23987",
+        "matplotlib__matplotlib-25311",
+        "sphinx-doc__sphinx-8435",
+        "sympy__sympy-12236", "sympy__sympy-17022", "sympy__sympy-18057",
+        "sympy__sympy-21612",
+        # Second run (5)
+        "django__django-12470", "django__django-14580",
+        "matplotlib__matplotlib-25079",
+        "sympy__sympy-15346", "sympy__sympy-17139",
+    ]
+
+
 def load_lite275() -> list[str]:
     """Return all 275 Lite instance IDs (resolved + unresolved + errors).
 
@@ -200,6 +223,7 @@ def load_instance_set(name: str) -> list[str]:
     _loaders = {
         "failing100": load_failing100,
         "ratelimited76": load_ratelimited76,
+        "resolved18": load_resolved18,
         "resolved175": load_resolved175,
         "lite275": load_lite275,
         "verified433": load_verified433,

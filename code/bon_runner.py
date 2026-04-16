@@ -285,6 +285,24 @@ def _run_single_candidate_sync(
         result["test_files"] = test_files
         result["is_viable"] = bool(patch.strip())
 
+        # --- Capture trajectory (agent events) for leaderboard verification ---
+        try:
+            events = []
+            for ev in conversation.state.events:
+                # Serialize each event to a dict (openhands-sdk events have .model_dump)
+                if hasattr(ev, "model_dump"):
+                    events.append(ev.model_dump(mode="json"))
+                else:
+                    events.append(str(ev))
+            result["trajectory"] = events
+            result["num_events"] = len(events)
+        except Exception as traj_exc:
+            logger.warning(
+                "[BoN] trajectory capture failed for instance=%s path=%s: %s",
+                instance_id, path_name, str(traj_exc)[:200],
+            )
+            result["trajectory"] = []
+
     except Exception as exc:
         error_msg = str(exc)[:500]
         logger.warning(
