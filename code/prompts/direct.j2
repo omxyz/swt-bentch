@@ -1,0 +1,36 @@
+<uploaded_files>
+/workspace/{{ workspace_dir_name }}
+</uploaded_files>
+I have uploaded a python code repository in the directory {{ workspace_dir_name }}. Consider the following issue description:
+
+<issue_description>
+{{ instance.problem_statement }}
+</issue_description>
+
+Your task: write **unit tests** that reproduce the issue above within the project's existing test framework. The tests must **fail** on the current (buggy) code and **pass** once the issue is fixed.
+
+## Important constraints
+- You must ONLY create or modify files in the project's test directories.
+- Do NOT create standalone scripts like `reproduction.py`. Write proper test cases instead.
+- Do NOT modify any source/library code — only test files.
+- Use the SAME test framework the project already uses (pytest, unittest, django test, etc.).
+- Follow the project's existing test file naming and organization conventions.
+
+## Steps
+
+1. **Explore** the repository structure. Find the test directory, understand the test framework used, and locate test files related to the issue.
+
+2. **Understand** the issue. Identify the exact module, class, or function that is broken. Read relevant source code.
+
+3. **Write tests** that exercise the broken behavior. Place them in the appropriate existing test file, or create a new test file following the project's conventions. Each test should:
+   - Import the relevant module/class directly
+   - Set up minimal test fixtures
+   - Call the buggy function with the exact inputs described in the issue
+   - Make a clear assertion that the correct output SHOULD hold — this assertion FAILS due to the bug
+   - Include a descriptive test name (e.g., `test_issue_<number>_description`)
+
+4. **Run your tests** using the project's test runner and verify they **FAIL**.
+   - If any test passes, it means your test does not reproduce the bug. Fix it.
+   - Only submit tests that you have confirmed actually fail.
+
+5. **Double-check**: Did you accidentally fix the bug? You should NOT have modified any non-test files.

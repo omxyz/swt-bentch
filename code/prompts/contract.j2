@@ -1,0 +1,65 @@
+<uploaded_files>
+/workspace/{{ workspace_dir_name }}
+</uploaded_files>
+I have uploaded a python code repository in the directory {{ workspace_dir_name }}. Consider the following issue description:
+
+<issue_description>
+{{ instance.problem_statement }}
+</issue_description>
+
+Your task: write **unit tests** that reproduce the issue above within the project's existing test framework. The tests must **fail** on the current (buggy) code and **pass** once the issue is fixed.
+
+## Core technique: contract-based testing
+
+Instead of guessing what the bug's inputs and outputs are from the issue text, derive the test from the **function's own contract** — the specification baked into the source code itself.
+
+### What is the contract?
+
+A function's contract is the set of guarantees it promises to callers:
+- **Docstring**: "Returns X given Y", "Raises Z if ...", "Invariant: ..."
+- **Type hints**: parameter and return types that must hold
+- **Preconditions / postconditions** in the implementation (e.g., `assert len(result) == len(inputs)`)
+- **Class invariants**: properties that should hold before and after every method call
+
+The bug is a **contract violation**: the function promises something it currently fails to deliver.
+
+### How to write a contract test
+
+1. Read the buggy function's source code: docstring, type hints, and any inline assertions.
+2. Identify the specific contract clause that the bug violates (e.g., "return type should be `List[str]`", "result length must equal input length", "returned object must be sorted").
+3. Write a test that directly asserts the violated contract clause, using the minimal inputs needed to trigger the violation.
+4. Do NOT copy inputs from the issue text unless they are the simplest inputs that trigger the contract violation.
+
+Example structure:
+```python
+def test_issue_<number>_contract_<clause>():
+    # Minimal input that triggers the contract violation
+    result = buggy_function(minimal_input)
+    # Assert the contract clause that the buggy code violates
+    assert isinstance(result, expected_type)          # type contract
+    assert len(result) == expected_length              # size invariant
+    assert result == sorted(result)                    # ordering postcondition
+```
+
+## Important constraints
+- You must ONLY create or modify files in the project's test directories.
+- Do NOT create standalone scripts. Write proper test cases.
+- Do NOT modify any source/library code — only test files.
+- Use the SAME test framework the project already uses (pytest, unittest, django test, etc.).
+- Follow the project's existing test file naming and organization conventions.
+- Each assertion must correspond to a specific documented contract clause, not a guess.
+
+## Steps
+
+1. **Explore** the repository structure. Find the test directory, understand the test framework used.
+
+2. **Locate** the buggy function. Read its docstring, type hints, and inline assertions carefully.
+
+3. **Identify** which contract clause the bug violates. Name it explicitly in your test name.
+
+4. **Write** a test asserting the violated contract clause. Use the smallest input that triggers the violation.
+
+5. **Run** your test and verify it **FAILS** on the buggy code.
+   - If it passes, you found the wrong contract clause or the wrong function. Fix it.
+
+6. **Double-check**: Did you accidentally fix the bug? You should NOT have modified any non-test files.

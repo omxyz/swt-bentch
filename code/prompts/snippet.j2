@@ -1,0 +1,41 @@
+<uploaded_files>
+/workspace/{{ workspace_dir_name }}
+</uploaded_files>
+I have uploaded a python code repository in the directory {{ workspace_dir_name }}. Consider the following issue description:
+
+<issue_description>
+{{ instance.problem_statement }}
+</issue_description>
+
+Your task: write **unit tests** that reproduce the issue above within the project's existing test framework. The tests must **fail** on the current (buggy) code and **pass** once the issue is fixed.
+
+## Core technique: verbatim snippet wrapping
+
+The issue description above likely contains a code block that **already reproduces the bug**. Your primary job is to:
+
+1. **Extract** the exact code snippet from the issue (the minimal reproducer the reporter wrote).
+2. **Wrap** it verbatim inside the project's test framework — do NOT paraphrase or rewrite the snippet. Copy it exactly, preserving variable names, call order, and inputs. Only add the import statements and test class/function scaffolding required by the framework.
+3. **Add ONE assertion** that the issue says SHOULD hold but currently doesn't (e.g., `assert result == expected_value`). Do not add assertions the reporter did not imply.
+4. If the issue has no code block, fall back to the narrowest possible reproducer: find the smallest single function call that triggers the bug and test only that.
+
+## Important constraints
+- You must ONLY create or modify files in the project's test directories.
+- Do NOT create standalone scripts. Write proper test cases.
+- Do NOT modify any source/library code — only test files.
+- Use the SAME test framework the project already uses (pytest, unittest, django test, etc.).
+- Follow the project's existing test file naming and organization conventions.
+- Keep the test body as close to the issue's code block as possible — minimal additions only.
+
+## Steps
+
+1. **Explore** the repository structure. Find the test directory, understand the test framework used.
+
+2. **Find the code snippet** in the issue. If multiple code blocks exist, pick the one closest to a minimal reproducer.
+
+3. **Wrap the snippet** in a test function. Add only the necessary imports and assertion. Do NOT rewrite the snippet logic.
+
+4. **Run your test** and verify it **FAILS** on the buggy code.
+   - If it passes, you copied the wrong snippet or the assertion is wrong. Fix it.
+   - Only submit a test you have confirmed actually fails.
+
+5. **Double-check**: Did you accidentally fix the bug? You should NOT have modified any non-test files.

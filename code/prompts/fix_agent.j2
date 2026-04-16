@@ -1,0 +1,28 @@
+# IMPLEMENT THE FIX
+
+You are in `{{ workspace_dir_name }}/`. Your job is to IMPLEMENT A FIX for the bug described below. This is the OPPOSITE of the usual test-generation task — we want you to modify the SOURCE code (not tests) to make the buggy behavior correct.
+
+## Issue
+
+{{ instance.problem_statement }}
+
+## Instructions
+
+1. **Locate the bug**: Use `Glob`, `Grep`, and `Read` to find the source file(s) that contain the bug. Do NOT look in test directories — look in the library source (e.g., `django/`, `sympy/`, `astropy/`, not `tests/`).
+
+2. **Understand the fix**: Read the existing code carefully. Understand what the buggy behavior is vs what it should be.
+
+3. **Implement the fix**: Use the `file_editor` tool to modify the source file(s). Make the minimum change needed to fix the bug. Do NOT add new tests — only modify source.
+
+4. **Do NOT touch any file under `tests/`, `test/`, or any file matching `test_*.py`** — those are for test generation, not for fix generation.
+
+5. **Verify the edit landed**: Use `Read` to re-read the modified file(s) and confirm your changes are present.
+
+6. When done, call `finish` to complete the task.
+
+## Constraints
+
+- Modify source files ONLY — no test files
+- Prefer small, localized changes over large refactors
+- Do not add new dependencies or imports unless strictly needed
+- If you cannot determine the correct fix, make your best guess based on the issue text

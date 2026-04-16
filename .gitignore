@@ -1,0 +1,20 @@
+# Raw data (backed up separately, not shared publicly)
+data/
+
+# OS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# OMC/OMX state
+.omc/
+.omx/
+
+# LaTeX build artifacts
+arxiv/*.aux
+arxiv/*.bbl
+arxiv/*.blg
+arxiv/*.log
+arxiv/*.out

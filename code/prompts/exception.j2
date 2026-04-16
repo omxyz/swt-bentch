@@ -1,0 +1,74 @@
+<uploaded_files>
+/workspace/{{ workspace_dir_name }}
+</uploaded_files>
+I have uploaded a python code repository in the directory {{ workspace_dir_name }}. Consider the following issue description:
+
+<issue_description>
+{{ instance.problem_statement }}
+</issue_description>
+
+Your task: write **unit tests** that reproduce the issue above within the project's existing test framework. The tests must **fail** on the current (buggy) code and **pass** once the issue is fixed.
+
+## Core technique: exception-based testing
+
+Many bugs manifest as wrong exceptions — the wrong type is raised, the wrong message is included, an exception is raised when it shouldn't be, or no exception is raised when the contract requires one. This technique focuses on the exception boundary.
+
+### Identify the exception pattern
+
+From the issue description and the source code, determine which of these applies:
+
+| Pattern | What the bug does | What the test asserts |
+|---|---|---|
+| **Wrong type raised** | Raises `AttributeError` instead of `ValueError` | `pytest.raises(ValueError)` fails because `AttributeError` is raised |
+| **Wrong message** | Raises correct type but with wrong/missing message | `pytest.raises(ValueError, match=r"expected text")` fails |
+| **Spurious exception** | Raises an exception when it shouldn't | Plain call fails; test asserts no exception is raised |
+| **Missing exception** | Should raise but doesn't | `pytest.raises(ExpectedException)` fails because nothing is raised |
+
+### How to write an exception test
+
+Use `pytest.raises` (preferred) or `assertRaises` depending on the framework:
+
+```python
+# Pattern: wrong/missing exception type
+def test_issue_<number>_raises_<exception_type>():
+    with pytest.raises(ValueError, match=r"<expected message fragment>"):
+        buggy_function(triggering_inputs)
+
+# Pattern: spurious exception (should NOT raise)
+def test_issue_<number>_no_exception_on_valid_input():
+    # Should complete without raising
+    result = buggy_function(valid_inputs)
+    assert result is not None  # or whatever the postcondition is
+```
+
+### Finding the expected exception
+
+1. Read the issue description: does it mention a specific exception class and message?
+2. Read the function's docstring: does it document `Raises: SomeError: when ...`?
+3. Read the function's source: are there `raise` statements that should fire but don't (or fire when they shouldn't)?
+4. Check existing tests: what exception type do sibling tests expect for similar inputs?
+
+Use the EXACT exception class and message fragment from the source or issue. Do not invent exception types.
+
+## Important constraints
+- You must ONLY create or modify files in the project's test directories.
+- Do NOT create standalone scripts. Write proper test cases.
+- Do NOT modify any source/library code — only test files.
+- Use the SAME test framework the project already uses (pytest, unittest, django test, etc.).
+- Follow the project's existing test file naming and organization conventions.
+- The `match=` argument to `pytest.raises` must use a fragment from the actual error message, not a guess.
+
+## Steps
+
+1. **Explore** the repository structure. Find the test directory, understand the test framework used.
+
+2. **Identify** the exception pattern: wrong type, wrong message, spurious, or missing exception.
+
+3. **Read** the function source and docstring to find the EXACT exception class and expected message.
+
+4. **Write** a test using `pytest.raises` (or `assertRaises`) targeting the exact exception and message.
+
+5. **Run** your test and verify it **FAILS** on the buggy code.
+   - If it passes unexpectedly, the exception behavior matches your test — adjust the test to target the actual bug.
+
+6. **Double-check**: Did you accidentally fix the bug? You should NOT have modified any non-test files.

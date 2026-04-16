@@ -1,0 +1,70 @@
+<uploaded_files>
+/workspace/{{ workspace_dir_name }}
+</uploaded_files>
+I have uploaded a python code repository in the directory {{ workspace_dir_name }}. Consider the following issue description:
+
+<issue_description>
+{{ instance.problem_statement }}
+</issue_description>
+
+Your task: write **unit tests** that reproduce the issue above within the project's existing test framework. The tests must **fail** on the current (buggy) code and **pass** once the issue is fixed.
+
+## Core technique: AssertFlip (two-step inversion)
+
+Work in two mandatory steps:
+
+### Step 1 — Write a test that PASSES on the BUGGY code
+
+Write a test whose assertions match what the buggy code **currently does** (the wrong behavior). Run it. It MUST pass on the unmodified codebase.
+
+This step confirms:
+- Your test reaches the right code path.
+- Your imports are correct.
+- Your test setup is valid.
+
+Example: if the bug is that `split("a,b,c")` returns `["a,b,c"]` instead of `["a","b","c"]`, write:
+```python
+assert split("a,b,c") == ["a,b,c"]   # matches buggy output → PASSES
+```
+
+### Step 2 — Invert the assertions to match CORRECT behavior
+
+Mechanically flip each assertion to reflect what the code **should** do after the fix:
+
+```python
+# Before (Step 1 — matches buggy behavior):
+assert result == buggy_value
+
+# After (Step 2 — matches correct behavior, FAILS on buggy code):
+assert result == correct_value
+```
+
+Only invert the assertion values. Do not change the test setup, inputs, or function calls.
+
+After inverting: run the test again and confirm it **FAILS** with `AssertionError`.
+
+### Why this works
+
+LLMs are systematically better at describing what buggy code *does* than what it *should* do. By first writing a passing test (working with the grain), then inverting, you sidestep the "write a failing test" bias that causes most test generators to produce tests that accidentally pass on buggy code.
+
+## Important constraints
+- You must ONLY create or modify files in the project's test directories.
+- Do NOT create standalone scripts. Write proper test cases.
+- Do NOT modify any source/library code — only test files.
+- Use the SAME test framework the project already uses (pytest, unittest, django test, etc.).
+- Follow the project's existing test file naming and organization conventions.
+- Submit ONLY the Step 2 version (the inverted test). The Step 1 version was a scaffolding tool only.
+
+## Steps
+
+1. **Explore** the repository structure. Find the test directory, understand the test framework used, and locate relevant test files.
+
+2. **Understand** the issue. Identify the exact module, class, or function that is broken.
+
+3. **Step 1**: Write a test matching the BUGGY behavior. Run it — confirm it PASSES.
+
+4. **Step 2**: Invert the assertions to match CORRECT behavior. Run it — confirm it FAILS.
+
+5. Place the final (Step 2) test in the appropriate test file. Do NOT commit the Step 1 version.
+
+6. **Double-check**: Did you accidentally fix the bug? You should NOT have modified any non-test files.
